@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Setup – NewsDesk</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090f;--surface:#111118;--surface2:#18181f;--border:#1f1f2e;--border2:#2a2a3a;
+  --accent:#f97316;--accent2:#fb923c;--accentlow:rgba(249,115,22,.12);
+  --text:#f0eff0;--muted:#6b7280;--text3:#3d3d52;
+  --liked:#22c55e;--likedlow:rgba(34,197,94,.1);--disliked:#ef4444;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:2rem 1rem 6rem;
+background-image:radial-gradient(ellipse at 10% 30%,rgba(249,115,22,.06) 0,transparent 50%)}
+
+.header{max-width:860px;margin:0 auto 2rem;display:flex;align-items:center;gap:1rem}
+.brand{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800}
+.brand span{color:var(--accent)}
+.steps{margin-left:auto;display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted)}
+.step{display:flex;align-items:center;gap:.3rem}
+.dot{width:20px;height:20px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700}
+.step.done .dot,.step.active .dot{background:var(--accent);color:#fff}
+.step.active .dot{box-shadow:0 0 0 3px rgba(249,115,22,.25)}
+.step-line{width:20px;height:1px;background:var(--border)}
+
+.main{max-width:860px;margin:0 auto}
+.page-title{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.4rem}
+.page-sub{color:var(--muted);font-size:.9rem;margin-bottom:1.75rem}
+
+.alert{padding:.7rem 1rem;border-radius:8px;font-size:.85rem;margin-bottom:1rem;display:none}
+.alert.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.alert.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac}
+
+/* AI section */
+.ai-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.75rem}
+.ai-box h3{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem}
+.ai-box p{color:var(--muted);font-size:.82rem;margin-bottom:.9rem}
+textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;
+color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;resize:vertical;min-height:85px;outline:none;transition:border-color .2s;line-height:1.55}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--muted)}
+.ai-badge{font-size:.65rem;background:rgba(249,115,22,.15);color:var(--accent);border:1px solid rgba(249,115,22,.3);border-radius:999px;padding:.1rem .4rem;font-weight:700}
+.ai-btn{display:inline-flex;align-items:center;gap:.45rem;margin-top:.65rem;padding:.55rem 1.1rem;
+background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .2s}
+.ai-btn:hover{background:var(--accent2)}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-result{margin-top:.9rem;padding:.7rem 1rem;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:8px;display:none}
+.ai-result-title{color:#86efac;font-weight:600;font-size:.82rem;margin-bottom:.5rem}
+.ai-tags{display:flex;flex-wrap:wrap;gap:.35rem}
+.ai-tag{padding:.2rem .55rem;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.22);border-radius:999px;font-size:.74rem;color:#86efac}
+
+/* Divider */
+.section-divider{display:flex;align-items:center;gap:.75rem;margin:1.5rem 0 1.25rem}
+.section-divider .line{flex:1;height:1px;background:var(--border)}
+.section-divider .label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+
+/* Instructions */
+.instructions{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;
+margin-bottom:1.25rem;font-size:.82rem;color:var(--muted);line-height:1.6}
+.instructions strong{color:var(--text)}
+
+/* Category groups */
+.group-block{margin-bottom:1.5rem}
+.group-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.group-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.select-all{font-size:.72rem;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem}
+.chip{position:relative;padding:.4rem .8rem;border-radius:999px;font-size:.8rem;font-weight:500;cursor:pointer;
+border:1px solid var(--border);background:var(--surface2);color:var(--muted);user-select:none;transition:all .15s;
+display:flex;align-items:center;gap:.3rem}
+.chip:hover{border-color:var(--text);color:var(--text)}
+.chip.liked{border-color:var(--liked);background:var(--likedlow);color:#86efac}
+.chip .ai-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);display:none;flex-shrink:0}
+.chip.ai-matched .ai-dot{display:block}
+
+/* Bottom bar */
+.bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);
+padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:100}
+.counts{display:flex;gap:1.25rem;font-size:.85rem}
+.count-item span{font-family:'Syne',sans-serif;font-weight:700}
+.count-item.liked span{color:var(--liked)}
+.bar-right{display:flex;align-items:center;gap:.75rem}
+.skip-btn{font-size:.82rem;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline}
+.save-btn{padding:.65rem 1.75rem;background:var(--accent);color:#fff;border:none;border-radius:8px;
+font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s}
+.save-btn:hover{background:var(--accent2)}
+.save-btn:disabled{opacity:.5;cursor:not-allowed}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">News<span>Desk</span></div>
+  <div class="steps">
+    <div class="step done"><div class="dot">✓</div><span>Register</span></div>
+    <div class="step-line"></div>
+    <div class="step active"><div class="dot">2</div><span>Preferences</span></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="dot">3</div><span>Dashboard</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">Personalise your feed</div>
+  <div class="page-sub">Pick categories you care about, describe yourself for AI suggestions, or do both — it's all on one page.</div>
+
+  <div class="alert err" id="err"></div>
+  <div class="alert ok"  id="ok"></div>
+
+  <!-- AI description box (always visible, optional) -->
+  <div class="ai-box" id="aiBox">
+    <h3>🤖 Describe yourself <span class="ai-badge">AI · optional</span></h3>
+    <p>Write about your profession, hobbies, interests. If you write something here, AI will automatically extract matching categories when you save.</p>
+    <textarea id="desc" placeholder="E.g. I'm a software engineer who invests in stocks and mutual funds. I follow Indian startup ecosystem closely…"></textarea>
+  </div>
+
+  <div class="section-divider">
+    <div class="line"></div>
+    <div class="label">Or pick manually below</div>
+    <div class="line"></div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <strong>Click</strong> to <strong style="color:#86efac">select</strong> &nbsp;·&nbsp;
+    <strong>Click again</strong> to deselect &nbsp;·&nbsp;
+    <span style="color:var(--accent)">●</span> = AI suggested
+  </div>
+
+  <div id="catContainer"></div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bar">
+  <div class="counts">
+    <div class="count-item liked"><span id="likedCount">0</span> selected</div>
+  </div>
+  <div class="bar-right">
+    <button class="skip-btn" onclick="skipNow()">Skip for now</button>
+    <button class="save-btn" id="saveBtn" onclick="savePrefs()">Save & Continue →</button>
+  </div>
+</div>
+
+<script>
+const GROUPS = {{ category_groups | tojson }};
+const CATS   = {{ all_categories  | tojson }};
+const state  = {};
+let aiExtracted = [];
+
+// ── Build UI (using createElement to avoid innerHTML+= destroying click handlers) ──
+function buildUI(){
+  const el = document.getElementById('catContainer');
+  el.innerHTML = '';
+
+  for(const [group, keys] of Object.entries(GROUPS)){
+    // Create group block
+    const block = document.createElement('div');
+    block.className = 'group-block';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'group-header';
+
+    const label = document.createElement('div');
+    label.className = 'group-label';
+    label.textContent = group;
+
+    const selBtn = document.createElement('button');
+    selBtn.className = 'select-all';
+    selBtn.textContent = 'Select all';
+    selBtn.onclick = () => selectAll(keys);
+
+    header.appendChild(label);
+    header.appendChild(selBtn);
+    block.appendChild(header);
+
+    // Chips container
+    const chipsDiv = document.createElement('div');
+    chipsDiv.className = 'chips';
+
+    keys.forEach(k => {
+      state[k] = 0;
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.id = `chip_${k}`;
+      chip.dataset.key = k;
+
+      const dot = document.createElement('div');
+      dot.className = 'ai-dot';
+      chip.appendChild(dot);
+      chip.appendChild(document.createTextNode(CATS[k] || k));
+
+      chip.onclick = () => cycleChip(k);
+      chipsDiv.appendChild(chip);
+    });
+
+    block.appendChild(chipsDiv);
+    el.appendChild(block);
+  }
+}
+
+function cycleChip(k){
+  state[k] = state[k] === 1 ? 0 : 1;
+  refreshChip(k);
+  updateCounts();
+}
+
+function refreshChip(k){
+  const chip = document.getElementById(`chip_${k}`);
+  if(!chip) return;
+  chip.className = 'chip';
+  if(state[k]===1) chip.classList.add('liked');
+  if(aiExtracted.includes(k)) chip.classList.add('ai-matched');
+}
+
+function updateCounts(){
+  const liked = Object.values(state).filter(v=>v===1).length;
+  document.getElementById('likedCount').textContent = liked;
+}
+
+function selectAll(keys){
+  keys.forEach(k=>{ state[k]=1; refreshChip(k); });
+  updateCounts();
+}
+
+// ── Save (auto-sends description to Ollama if text is present) ───────────────
+async function savePrefs(){
+  const btn = document.getElementById('saveBtn');
+  const err = document.getElementById('err');
+  const ok  = document.getElementById('ok');
+  err.style.display='none'; ok.style.display='none';
+
+  const liked = Object.entries(state).filter(([,v])=>v===1).map(([k])=>k);
+  const desc  = document.getElementById('desc')?.value.trim()||'';
+
+  // Auto-detect: send to Ollama only if user wrote something
+  const useAI = desc.length > 0;
+
+  if(liked.length===0 && !desc){
+    err.textContent='Please select at least one category or describe yourself.';
+    err.style.display='block'; return;
+  }
+
+  btn.disabled=true;
+  btn.textContent = useAI ? 'Extracting with AI…' : 'Saving…';
+
+  try{
+    const token = localStorage.getItem('access_token');
+    const r = await fetch('/preferences/save',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify({liked_categories:liked, disliked_categories:[], description:desc, use_ai_extraction:useAI})
+    });
+    const d = await r.json();
+    if(!r.ok){ err.textContent=d.detail||'Save failed.'; err.style.display='block'; return; }
+    ok.textContent=`✅ Saved! ${d.liked_categories.length} categories selected. Redirecting…`;
+    ok.style.display='block';
+    setTimeout(()=>window.location.href='/dashboard/',1000);
+  }catch(e){ err.textContent='Network error.'; err.style.display='block'; }
+  finally{ btn.disabled=false; btn.textContent='Save & Continue →'; }
+}
+
+function skipNow(){
+  if(confirm('Skip for now? You can update preferences anytime from settings.'))
+    window.location.href='/dashboard/';
+}
+
+buildUI();
+</script>
+</body>
+</html>
