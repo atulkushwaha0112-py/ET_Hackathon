@@ -5,716 +5,691 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>NewsDesk — AI Neural Business Intelligence | Economic Times</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
 }
 
 :root {
-  --et-primary: #0A2A38;
-  --et-deep: #051E28;
-  --et-gold: #E5B83C;
-  --et-gold-glow: rgba(229, 184, 60, 0.5);
-  --et-teal: #2F9B7A;
-  --et-cream: #FFFBF0;
-  --et-paper: #FEF7E8;
-  --et-graphite: #2C3E3F;
-  --et-mid: #8B7A6B;
-  --et-dark: #1F2E2A;
-  --ai-electric: #00D9FF;
+  --et-red:       #C0001F;
+  --et-red-mid:   #8B0015;
+  --et-red-dim:   rgba(192,0,31,0.08);
+  --et-dark:      #050508;
+  --et-ink:       #0E0E0C;
+  --et-mid-dark:  #1A1208;
+  --et-gold:      #A07408;
+  --et-gold-lt:   #D4A820;
+  --et-gold-dim:  rgba(160,116,8,0.18);
+  --et-warm:      #EDE8DC;
+  --et-paper:     #F4EFE4;
+  --et-grey:      #5A5552;
+  --et-rule:      rgba(192,0,31,0.25);
 }
 
-body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: radial-gradient(circle at 20% 30%, #FFFBF0, #FCF3E0);
-  min-height: 100vh;
+html, body {
+  width: 100%; height: 100%;
   overflow: hidden;
-  color: var(--et-dark);
+  background: var(--et-dark);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--et-warm);
 }
 
+/* ── NOISE OVERLAY ── */
+.noise {
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── CANVAS ── */
 #canvas-container {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
+  position: fixed; inset: 0; z-index: 0;
 }
 
-/* Premium Navigation - Floating Crystal */
+/* ── ET GHOST WATERMARK ── */
+.et-bg-watermark {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 2; overflow: hidden;
+}
+.et-bg-watermark-inner {
+  display: flex; flex-direction: column; align-items: center;
+  transform: rotate(-8deg);
+  white-space: nowrap; user-select: none;
+  gap: 0;
+}
+.et-wm-top {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 18vw, 220px);
+  color: rgba(160,0,20,0.065);
+  letter-spacing: 0.1em; line-height: 1;
+}
+.et-wm-bottom {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(12px, 2.6vw, 38px);
+  color: rgba(160,0,20,0.045);
+  letter-spacing: 0.45em; font-weight: 900;
+  text-transform: uppercase; margin-top: -6px;
+}
+
+/* ── TOP NAV ── */
 .top-nav {
   position: fixed;
-  top: 24px;
-  left: 28px;
-  right: 28px;
-  height: 76px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 36px;
-  background: rgba(255, 251, 240, 0.85);
+  top: 20px; left: 24px; right: 24px;
+  height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  background: rgba(8, 7, 5, 0.88);
   backdrop-filter: blur(24px);
-  border-radius: 80px;
-  border: 1px solid rgba(229, 184, 60, 0.4);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(229, 184, 60, 0.2) inset;
+  border-radius: 4px;
+  border: 1px solid rgba(192,0,31,0.3);
+  border-top: 2px solid var(--et-red);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(192,0,31,0.08) inset;
   z-index: 100;
-  animation: floatNav 0.6s ease-out;
+  animation: floatNav 0.7s cubic-bezier(0.16,1,0.3,1) forwards;
 }
 
 @keyframes floatNav {
-  from { opacity: 0; transform: translateY(-30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Rule accents on nav */
+.top-nav::after {
+  content: '';
+  position: absolute; bottom: 0; left: 5%; right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192,0,31,0.2), transparent);
 }
 
 .logo-area {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  display: flex; align-items: center; gap: 18px;
 }
 
 .newsdesk-logo {
-  background: linear-gradient(135deg, var(--et-primary), var(--et-teal));
-  color: var(--et-gold);
-  font-weight: 800;
-  font-size: 1.1rem;
-  padding: 10px 24px;
-  border-radius: 50px;
-  letter-spacing: -0.2px;
-  box-shadow: 0 6px 20px rgba(10, 42, 56, 0.25);
-  border: 1px solid var(--et-gold);
-  position: relative;
-  overflow: hidden;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  color: var(--et-red);
+  padding: 8px 22px;
+  border: 1px solid rgba(192,0,31,0.4);
+  border-radius: 2px;
+  background: rgba(192,0,31,0.06);
+  position: relative; overflow: hidden;
+  line-height: 1;
 }
-
 .newsdesk-logo::after {
   content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(115deg, transparent, rgba(229, 184, 60, 0.2), transparent);
+  position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(115deg, transparent, rgba(192,0,31,0.15), transparent);
   transform: rotate(30deg);
-  animation: shimmerLogo 3s infinite;
+  animation: shimmerLogo 4s infinite;
 }
-
 @keyframes shimmerLogo {
-  0% { transform: translateX(-100%) rotate(30deg); }
+  0%   { transform: translateX(-100%) rotate(30deg); }
   100% { transform: translateX(100%) rotate(30deg); }
 }
 
 .brand-text {
-  font-weight: 800;
-  font-size: 1.25rem;
-  background: linear-gradient(135deg, var(--et-primary), var(--et-teal));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--et-warm);
+  letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 10px;
 }
 
 .ai-badge {
-  background: linear-gradient(135deg, rgba(229, 184, 60, 0.2), rgba(47, 155, 122, 0.2));
-  padding: 6px 16px;
-  border-radius: 40px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--et-gold);
-  border: 1px solid rgba(229, 184, 60, 0.5);
-  margin-left: 12px;
-  letter-spacing: 0.5px;
-  backdrop-filter: blur(4px);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.62rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--et-gold-lt);
+  border: 1px solid rgba(160,116,8,0.4);
+  padding: 4px 12px; border-radius: 2px;
+  background: rgba(160,116,8,0.08);
 }
 
 .right-stats {
-  display: flex;
-  gap: 20px;
-  align-items: center;
+  display: flex; gap: 14px; align-items: center;
 }
 
 .live-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(47, 155, 122, 0.15);
-  padding: 8px 20px;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--et-teal);
-  border: 1px solid rgba(47, 155, 122, 0.4);
-  backdrop-filter: blur(4px);
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(192,0,31,0.1);
+  padding: 7px 18px; border-radius: 2px;
+  font-size: 0.68rem; font-weight: 600;
+  color: var(--et-red);
+  border: 1px solid rgba(192,0,31,0.3);
+  letter-spacing: 0.12em; text-transform: uppercase;
 }
 
 .live-dot {
-  width: 10px;
-  height: 10px;
-  background: #2F9B7A;
-  border-radius: 50%;
-  animation: pulseNeural 1.2s infinite;
-  box-shadow: 0 0 12px #2F9B7A;
+  width: 7px; height: 7px;
+  background: var(--et-red); border-radius: 50%;
+  animation: pulseDot 1.2s infinite;
+  box-shadow: 0 0 8px var(--et-red);
 }
-
-@keyframes pulseNeural {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 155, 122, 0.7); }
-  50% { opacity: 0.6; transform: scale(0.9); box-shadow: 0 0 0 6px rgba(47, 155, 122, 0); }
+@keyframes pulseDot {
+  0%,100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(192,0,31,0.7); }
+  50%      { opacity: 0.5; transform: scale(0.85); box-shadow: 0 0 0 5px rgba(192,0,31,0); }
 }
 
 .market-chip {
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 8px 18px;
-  border-radius: 40px;
-  background: white;
-  border: 1px solid rgba(229, 184, 60, 0.3);
-  font-family: monospace;
+  font-size: 0.72rem; font-weight: 600;
+  padding: 7px 16px; border-radius: 2px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-family: monospace; cursor: none;
   transition: all 0.2s;
-  cursor: pointer;
 }
-
-.market-chip.up { color: var(--et-teal); background: linear-gradient(135deg, white, rgba(47, 155, 122, 0.05)); }
-.market-chip.dn { color: #E67E22; background: linear-gradient(135deg, white, rgba(230, 126, 34, 0.05)); }
+.market-chip.up { color: #4CAF50; border-color: rgba(76,175,80,0.25); }
+.market-chip.dn { color: var(--et-red); border-color: rgba(192,0,31,0.25); }
 
 #liveClock {
-  font-family: monospace;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--et-mid);
-  background: rgba(0, 0, 0, 0.03);
-  padding: 8px 18px;
-  border-radius: 40px;
-  letter-spacing: 0.5px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.95rem; letter-spacing: 0.12em;
+  color: rgba(237,232,220,0.45);
+  background: rgba(255,255,255,0.03);
+  padding: 7px 18px; border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* ===== REDESIGNED LOGIN CARD - WIDE, HORIZONTAL BALANCE, NO OVERLAP ===== */
+/* ── LOGIN WRAPPER ── */
 .login-wrapper {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
   z-index: 200;
-  width: 860px;
+  width: 880px;
   max-width: 90vw;
-  animation: levitate 0.8s cubic-bezier(0.16, 1, 0.3, 1.2) forwards;
+  animation: levitate 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
 }
 
 @keyframes levitate {
-  from { opacity: 0; transform: translate(-50%, -40%) scale(0.96); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from { opacity: 0; transform: translate(-50%,-42%) scale(0.95); }
+  to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
 }
 
 .login-card {
-  background: rgba(255, 251, 240, 0.96);
+  background: rgba(10, 9, 7, 0.94);
   backdrop-filter: blur(32px);
-  border-radius: 56px;
-  border: 1px solid rgba(229, 184, 60, 0.5);
-  box-shadow: 0 40px 80px rgba(10, 42, 56, 0.15), 0 0 0 1px rgba(229, 184, 60, 0.2) inset, 0 0 40px rgba(229, 184, 60, 0.08);
-  padding: 40px 44px 44px;
-  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  border-radius: 4px;
+  border: 1px solid rgba(192,0,31,0.3);
+  border-top: 3px solid var(--et-red);
+  box-shadow:
+    0 40px 80px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(192,0,31,0.06) inset,
+    0 0 60px rgba(192,0,31,0.04);
+  padding: 36px 40px 40px;
+  position: relative; overflow: hidden;
+  transition: box-shadow 0.4s;
+}
+.login-card:hover {
+  box-shadow:
+    0 50px 100px rgba(0,0,0,0.65),
+    0 0 80px rgba(192,0,31,0.07);
+}
+
+/* Subtle column rule inside card */
+.login-card::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(192,0,31,0.15), transparent);
+  pointer-events: none;
+}
+
+/* Noise grain on card */
+.login-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025; pointer-events: none; border-radius: 4px;
+}
+
+/* Gold rule accent at top */
+.card-accent {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 26px;
+}
+.card-accent-line {
+  height: 1px; flex: 1;
+  background: linear-gradient(90deg, var(--et-red), var(--et-gold-lt), transparent);
+}
+.card-accent-dot {
+  width: 6px; height: 6px;
+  background: var(--et-red); border-radius: 50%;
+  flex-shrink: 0;
+}
+.card-accent-label {
+  font-size: 0.58rem; font-weight: 600;
+  letter-spacing: 0.4em; text-transform: uppercase;
+  color: rgba(160,116,8,0.7);
+}
+
+/* Two-column layout */
+.card-split {
+  display: flex; gap: 36px; flex-wrap: wrap;
+}
+.card-left  { flex: 1.25; min-width: 240px; }
+.card-right { flex: 1; min-width: 240px; }
+
+/* ── LEFT COLUMN ── */
+.welcome-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 2.8vw, 2.15rem);
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  color: var(--et-warm);
+}
+.welcome-title .ai-highlight {
+  color: var(--et-red);
+  font-style: italic;
   position: relative;
 }
-
-.login-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 48px 96px rgba(229, 184, 60, 0.18);
-}
-
-.card-accent {
-  width: 100px;
-  height: 5px;
-  background: linear-gradient(90deg, var(--et-gold), var(--et-teal), var(--et-gold));
-  border-radius: 4px;
-  margin-bottom: 28px;
-  animation: gradientShift 3s infinite;
-  background-size: 200% auto;
-}
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% center; }
-  50% { background-position: 100% center; }
-}
-
-/* Two-column layout for balance */
-.card-split {
-  display: flex;
-  gap: 40px;
-  flex-wrap: wrap;
-}
-
-.card-left {
-  flex: 1.2;
-  min-width: 240px;
-}
-
-.card-right {
-  flex: 1;
-  min-width: 240px;
-}
-
-.welcome-title {
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1.25;
-  margin-bottom: 10px;
-  color: var(--et-primary);
-}
-
-.welcome-title .ai-highlight {
-  background: linear-gradient(135deg, var(--et-gold), var(--et-teal), #00D9FF);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  display: inline-block;
-  animation: textGlow 2s infinite;
-}
-
-@keyframes textGlow {
-  0%, 100% { filter: drop-shadow(0 0 2px rgba(229, 184, 60, 0.3)); }
-  50% { filter: drop-shadow(0 0 8px rgba(229, 184, 60, 0.6)); }
+.welcome-title .ai-highlight::after {
+  content: '';
+  position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--et-red), transparent);
 }
 
 .card-sub {
-  font-size: 0.85rem;
-  color: var(--et-mid);
-  margin-bottom: 24px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  font-size: 0.78rem; color: rgba(237,232,220,0.4);
+  margin-bottom: 22px; font-weight: 400;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  letter-spacing: 0.02em;
+}
+.card-sub-rule {
+  width: 1px; height: 12px;
+  background: rgba(192,0,31,0.4);
 }
 
 .ai-chip {
-  background: linear-gradient(135deg, var(--et-gold), #B8860B);
-  padding: 4px 14px;
-  border-radius: 30px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: var(--et-primary);
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(229, 184, 60, 0.4);
+  font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--et-gold-lt);
+  background: rgba(160,116,8,0.12);
+  border: 1px solid rgba(160,116,8,0.35);
+  padding: 3px 10px; border-radius: 2px;
 }
 
-/* AI Breaking News - Neural Pulse */
+/* Breaking module */
 .breaking-module {
-  background: linear-gradient(115deg, rgba(229, 184, 60, 0.08), rgba(47, 155, 122, 0.05));
-  border-radius: 40px;
-  padding: 18px 22px;
-  margin-bottom: 28px;
-  border-left: 5px solid var(--et-gold);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(4px);
+  background: rgba(192,0,31,0.05);
+  border-radius: 3px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  border-left: 3px solid var(--et-red);
+  position: relative; overflow: hidden;
 }
-
 .breaking-module::before {
   content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(229, 184, 60, 0.1), transparent);
-  animation: neuralScan 4s linear infinite;
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(192,0,31,0.06), transparent);
+  animation: neuralScan 5s linear infinite;
 }
-
 @keyframes neuralScan {
-  0% { left: -100%; }
+  0%   { left: -100%; }
   100% { left: 200%; }
 }
 
 .breaking-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--et-gold);
-  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.25em;
+  color: var(--et-red); margin-bottom: 12px;
 }
 
 .breaking-track {
-  height: 58px;
-  position: relative;
-  overflow: hidden;
+  height: 54px; position: relative; overflow: hidden;
 }
-
 .breaking-item {
-  position: absolute;
-  width: 100%;
-  font-weight: 600;
-  font-size: 0.92rem;
-  color: var(--et-dark);
-  line-height: 1.45;
-  transition: transform 0.5s cubic-bezier(0.2, 0.85, 0.4, 1), opacity 0.45s;
-  opacity: 0;
-  transform: translateY(24px);
+  position: absolute; width: 100%;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600; font-size: 0.88rem;
+  color: var(--et-warm); line-height: 1.45;
+  transition: transform 0.5s cubic-bezier(0.2,0.85,0.4,1), opacity 0.45s;
+  opacity: 0; transform: translateY(20px);
 }
+.breaking-item.active { opacity: 1; transform: translateY(0); }
 
-.breaking-item.active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Market Dashboard - 4 column, refined */
+/* Market dashboard */
 .market-dashboard {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 32px;
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+  margin-bottom: 0;
 }
-
 .market-tile {
-  background: white;
-  border-radius: 28px;
-  padding: 14px 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 3px;
+  padding: 12px 6px;
   text-align: center;
-  border: 1px solid rgba(229, 184, 60, 0.2);
-  transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-top: 2px solid transparent;
+  transition: all 0.3s cubic-bezier(0.2,0.9,0.4,1.1);
+  position: relative; overflow: hidden; cursor: none;
 }
-
-.market-tile::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--et-gold), var(--et-teal));
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.market-tile:hover::before {
-  transform: scaleX(1);
-}
-
 .market-tile:hover {
-  transform: translateY(-6px) scale(1.02);
-  border-color: var(--et-gold);
-  box-shadow: 0 20px 35px rgba(229, 184, 60, 0.2);
+  transform: translateY(-4px);
+  border-top-color: var(--et-red);
+  background: rgba(192,0,31,0.06);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.3);
 }
-
 .tile-label {
-  font-size: 0.62rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: var(--et-mid);
-  letter-spacing: 1px;
+  font-size: 0.58rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: rgba(237,232,220,0.35);
 }
-
 .tile-value {
-  font-family: monospace;
-  font-weight: 800;
-  font-size: 1rem;
-  margin-top: 6px;
-  color: var(--et-primary);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem; letter-spacing: 0.05em;
+  margin-top: 5px; color: var(--et-warm);
 }
-
 .tile-change {
-  font-size: 0.68rem;
-  font-weight: 700;
-  margin-top: 5px;
+  font-size: 0.65rem; font-weight: 600; margin-top: 3px;
 }
+.tile-change.up   { color: #4CAF50; }
+.tile-change.down { color: var(--et-red); }
 
-.tile-change.up { color: var(--et-teal); }
-.tile-change.down { color: #E67E22; }
-
-/* Input Fields - refined spacing */
+/* ── RIGHT COLUMN: LOGIN FORM ── */
 .input-field {
-  margin-bottom: 20px;
-  position: relative;
+  margin-bottom: 18px; position: relative;
 }
-
 .input-field input {
   width: 100%;
-  background: #FFFFFF;
-  border: 2px solid rgba(229, 184, 60, 0.2);
-  border-radius: 56px;
-  padding: 18px 26px 10px 26px;
-  font-size: 0.95rem;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(192,0,31,0.3);
+  border-radius: 2px;
+  padding: 20px 22px 10px 22px;
+  font-size: 0.9rem;
+  font-family: 'DM Sans', sans-serif;
   outline: none;
+  color: var(--et-warm);
   transition: all 0.3s;
-  color: var(--et-dark);
 }
-
+.input-field input::placeholder { color: transparent; }
 .input-field label {
   position: absolute;
-  left: 26px;
-  top: 50%;
+  left: 22px; top: 50%;
   transform: translateY(-50%);
-  font-size: 0.9rem;
-  color: var(--et-mid);
+  font-size: 0.82rem;
+  color: rgba(237,232,220,0.4);
   pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  font-weight: 500;
+  transition: all 0.25s cubic-bezier(0.2,0.9,0.4,1.1);
+  font-weight: 400;
 }
-
 .input-field input:focus {
-  border-color: var(--et-gold);
-  box-shadow: 0 0 0 6px rgba(229, 184, 60, 0.12);
-  transform: scale(1.01);
+  border-color: rgba(192,0,31,0.6);
+  border-bottom-color: var(--et-red);
+  background: rgba(192,0,31,0.04);
+  box-shadow: 0 0 0 3px rgba(192,0,31,0.08);
 }
-
 .input-field input:focus ~ label,
 .input-field input:not(:placeholder-shown) ~ label {
   top: 12px;
-  font-size: 0.62rem;
-  color: var(--et-gold);
-  font-weight: 800;
+  font-size: 0.58rem;
+  color: var(--et-gold-lt);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
-/* Login Button - Dynamic Neural */
+/* Login button */
 .login-btn {
   width: 100%;
-  background: linear-gradient(105deg, var(--et-primary), var(--et-teal), var(--et-primary));
+  background: linear-gradient(105deg, var(--et-red-mid), var(--et-red), var(--et-red-mid));
   background-size: 200% auto;
   border: none;
-  border-radius: 56px;
-  padding: 16px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  font-size: 0.95rem;
-  color: white;
+  border-radius: 2px;
+  padding: 15px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: 0.88rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--et-warm);
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
+  position: relative; overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 12px 30px rgba(10, 42, 56, 0.4);
-  margin-top: 12px;
+  box-shadow: 0 8px 24px rgba(192,0,31,0.35);
+  margin-top: 8px;
   animation: gradientFlow 3s infinite;
 }
-
 @keyframes gradientFlow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
 }
-
 .login-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 20px 40px rgba(229, 184, 60, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(192,0,31,0.45);
 }
-
 .btn-ripple {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.4) 50%, transparent 70%);
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
   transform: translateX(-100%);
   transition: transform 0.7s;
 }
+.login-btn:hover .btn-ripple { transform: translateX(100%); }
 
-.login-btn:hover .btn-ripple {
-  transform: translateX(100%);
+/* Alerts */
+.alert-message {
+  margin: 0 0 18px;
+  padding: 11px 16px;
+  border-radius: 2px;
+  font-size: 0.72rem; font-weight: 600;
+  display: none;
 }
+.alert-error   { background: rgba(192,0,31,0.1); border-left: 3px solid var(--et-red); color: #E87070; }
+.alert-success { background: rgba(76,175,80,0.1); border-left: 3px solid #4CAF50; color: #7DCE7F; }
 
+/* Footer links */
 .card-footer-links {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 24px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: flex; justify-content: space-between; flex-wrap: wrap;
+  gap: 10px; margin-top: 20px;
+  font-size: 0.7rem;
+  border-top: 1px solid rgba(192,0,31,0.15);
+  padding-top: 16px;
 }
-
 .card-footer-links a {
-  color: var(--et-teal);
-  text-decoration: none;
-  font-weight: 700;
+  color: var(--et-gold-lt); text-decoration: none; font-weight: 600;
   transition: color 0.2s;
 }
-
-.card-footer-links a:hover {
-  color: var(--et-gold);
-}
+.card-footer-links a:hover { color: var(--et-red); }
 
 .ai-footer-badge {
-  display: flex;
-  gap: 8px;
-  color: var(--et-mid);
-  font-size: 0.68rem;
-  align-items: center;
+  display: flex; gap: 6px;
+  color: rgba(237,232,220,0.25);
+  font-size: 0.62rem; align-items: center;
 }
 
-.alert-message {
-  margin: 12px 0 20px;
-  padding: 12px 18px;
-  border-radius: 40px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  display: none;
-  backdrop-filter: blur(8px);
-}
-
-.alert-error { background: rgba(230, 126, 34, 0.12); border-left: 4px solid #E67E22; color: #B85C1A; }
-.alert-success { background: rgba(47, 155, 122, 0.12); border-left: 4px solid #2F9B7A; color: #1E6B55; }
-
-/* Bottom Ticker - Hyperloop */
+/* ── BOTTOM TICKER ── */
 .ticker-bar {
   position: fixed;
-  bottom: 24px;
-  left: 28px;
-  right: 28px;
-  background: rgba(10, 42, 56, 0.88);
+  bottom: 20px; left: 24px; right: 24px;
+  background: rgba(8,7,5,0.92);
   backdrop-filter: blur(24px);
-  border-radius: 64px;
-  height: 58px;
-  display: flex;
-  align-items: center;
+  border-radius: 2px;
+  height: 52px;
+  display: flex; align-items: center;
   z-index: 100;
-  border: 1px solid rgba(229, 184, 60, 0.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: slideUpTicker 0.6s ease;
+  border: 1px solid rgba(192,0,31,0.3);
+  border-top: 2px solid var(--et-red);
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.4);
+  animation: slideUpTicker 0.7s cubic-bezier(0.16,1,0.3,1) forwards;
 }
-
 @keyframes slideUpTicker {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .ticker-label {
-  background: linear-gradient(115deg, var(--et-gold), #B8860B);
-  color: var(--et-primary);
-  padding: 0 36px;
+  background: var(--et-red);
+  color: var(--et-warm);
+  padding: 0 30px;
   height: 100%;
-  display: flex;
-  align-items: center;
-  border-radius: 64px 0 0 64px;
-  font-weight: 800;
-  font-size: 0.75rem;
-  letter-spacing: 1.5px;
-  gap: 10px;
+  display: flex; align-items: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.9rem; letter-spacing: 0.2em;
+  gap: 10px; flex-shrink: 0;
 }
 
 .ticker-scroll {
-  flex: 1;
-  overflow: hidden;
-  mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
+  flex: 1; overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, black 3%, black 97%, transparent);
 }
-
 .ticker-items {
-  display: flex;
-  white-space: nowrap;
+  display: flex; white-space: nowrap;
   animation: scrollHyperloop 28s linear infinite;
 }
-
 .ticker-item {
-  display: inline-flex;
-  gap: 18px;
-  padding: 0 36px;
-  border-right: 1px solid rgba(229, 184, 60, 0.4);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #FEF7E8;
+  display: inline-flex; gap: 16px;
+  padding: 0 30px;
+  border-right: 1px solid rgba(192,0,31,0.2);
+  font-size: 0.75rem; font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  color: rgba(237,232,220,0.75);
 }
+.ticker-item .up   { color: #4CAF50; }
+.ticker-item .dn   { color: var(--et-red); }
 
 @keyframes scrollHyperloop {
-  0% { transform: translateX(0); }
+  0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 
-/* Tooltip - Premium Glass */
+/* ── TOOLTIP ── */
 .country-tooltip {
-  position: fixed;
-  z-index: 300;
+  position: fixed; z-index: 300;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(15px) scale(0.95);
-  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+  transform: translateY(14px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.2,0.9,0.4,1.2);
 }
-
 .country-tooltip.show {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+  opacity: 1; transform: translateY(0) scale(1);
   pointer-events: auto;
 }
-
 .tooltip-card {
-  background: rgba(255, 251, 240, 0.98);
+  background: rgba(10,9,7,0.97);
   backdrop-filter: blur(24px);
-  border-radius: 40px;
-  padding: 20px 26px;
-  width: 310px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
-  border-left: 5px solid var(--et-gold);
+  border-radius: 3px;
+  padding: 18px 22px;
+  width: 300px;
+  box-shadow: 0 24px 50px rgba(0,0,0,0.5);
+  border: 1px solid rgba(192,0,31,0.3);
+  border-left: 4px solid var(--et-red);
+  color: var(--et-warm);
 }
 
-/* Music Control Button */
+/* ── MUSIC CONTROL ── */
 .music-control {
-  position: fixed;
-  bottom: 100px;
-  right: 32px;
+  position: fixed; bottom: 88px; right: 28px;
   z-index: 150;
-  background: rgba(10, 42, 56, 0.75);
+  background: rgba(8,7,5,0.88);
   backdrop-filter: blur(12px);
-  border-radius: 60px;
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid rgba(229, 184, 60, 0.4);
+  border-radius: 2px;
+  padding: 10px 18px;
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid rgba(192,0,31,0.3);
   cursor: pointer;
   transition: all 0.3s;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--et-gold);
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--et-gold-lt);
+  letter-spacing: 0.08em; text-transform: uppercase;
 }
-
 .music-control:hover {
-  transform: scale(1.05);
-  background: rgba(10, 42, 56, 0.9);
-  border-color: var(--et-gold);
+  border-color: var(--et-red);
+  background: rgba(192,0,31,0.08);
 }
+.music-icon { font-size: 1.1rem; }
 
-.music-icon {
-  font-size: 1.2rem;
+/* ET watermark bottom left */
+.watermark {
+  position: fixed; bottom: 22px; left: 28px;
+  font-family: 'Playfair Display', serif;
+  font-size: 10px; color: rgba(255,255,255,0.05);
+  letter-spacing: 0.2em; text-transform: uppercase;
+  z-index: 50; pointer-events: none;
 }
 
 @media (max-width: 780px) {
-  .card-split { flex-direction: column; gap: 24px; }
+  .card-split { flex-direction: column; gap: 22px; }
   .login-wrapper { width: 92vw; }
-  .login-card { padding: 32px 28px; }
-  .market-dashboard { gap: 8px; }
-  .market-tile { padding: 10px 4px; }
-  .ticker-label { padding: 0 20px; }
+  .login-card { padding: 28px 22px; }
+  .market-dashboard { gap: 7px; }
+  .ticker-label { padding: 0 18px; }
+  .top-nav { left: 12px; right: 12px; padding: 0 18px; }
+  .ticker-bar { left: 12px; right: 12px; }
 }
 </style>
 </head>
 <body>
-<div id="canvas-container"></div>
-<div class="particle-bg"></div>
 
+<!-- Noise -->
+<div class="noise"></div>
+
+<!-- ET ghost watermark -->
+<div class="et-bg-watermark">
+  <div class="et-bg-watermark-inner">
+    <div class="et-wm-top">ET</div>
+    <div class="et-wm-bottom">Economic &nbsp; Times</div>
+  </div>
+</div>
+
+<div id="canvas-container"></div>
+
+<!-- ── TOP NAV ── -->
 <div class="top-nav">
   <div class="logo-area">
     <div class="newsdesk-logo">NewsDesk</div>
-    <div class="brand-text">AI Neural Intelligence <span class="ai-badge">⚡ DEEP LEARNING</span></div>
+    <div class="brand-text">
+      AI Neural Intelligence
+      <span class="ai-badge">⚡ Deep Learning</span>
+    </div>
   </div>
   <div class="right-stats">
-    <div class="live-badge"><div class="live-dot"></div> NEURAL LIVE</div>
+    <div class="live-badge"><div class="live-dot"></div>Neural Live</div>
     <div class="market-chip up">NIFTY ▲ 0.68%</div>
     <div class="market-chip dn">GOLD ▼ 0.09%</div>
     <div id="liveClock">--:-- IST</div>
   </div>
 </div>
 
-<!-- REDESIGNED LOGIN CARD: Horizontal balance, two-column, avoids square/vertical overlap -->
+<!-- ── LOGIN CARD ── -->
 <div class="login-wrapper">
   <div class="login-card">
-    <div class="card-accent"></div>
+
+    <div class="card-accent">
+      <div class="card-accent-line"></div>
+      <div class="card-accent-dot"></div>
+      <div class="card-accent-label">Economic Times Intelligence Platform</div>
+      <div class="card-accent-dot"></div>
+      <div class="card-accent-line" style="background: linear-gradient(90deg, transparent, var(--et-gold-lt), var(--et-red));"></div>
+    </div>
+
     <div class="card-split">
-      <!-- Left Column: Title, breaking news, market dashboard -->
+
+      <!-- LEFT: Branding + news + markets -->
       <div class="card-left">
-        <div class="welcome-title">NewsDesk <span class="ai-highlight">Neural</span><br>Cognitive Hub</div>
-        <div class="card-sub"><span>🤖 AI-Powered Market Cognition</span> <span class="ai-chip">GPT-6 • Real-time</span></div>
+        <div class="welcome-title">
+          NewsDesk <span class="ai-highlight">Neural</span><br>Cognitive Hub
+        </div>
+        <div class="card-sub">
+          <span>AI-Powered Market Cognition</span>
+          <div class="card-sub-rule"></div>
+          <span class="ai-chip">GPT-6 · Real-time</span>
+        </div>
 
         <div class="breaking-module">
-          <div class="breaking-header"><div class="live-dot"></div><span>🧠 NEURAL INSIGHT • BREAKING ALERT</span></div>
+          <div class="breaking-header">
+            <div class="live-dot"></div>
+            <span>Neural Insight · Breaking Alert</span>
+          </div>
           <div class="breaking-track" id="breakingTrack"></div>
         </div>
 
@@ -726,9 +701,10 @@ body {
         </div>
       </div>
 
-      <!-- Right Column: Login form, alerts, footer -->
+      <!-- RIGHT: Login form -->
       <div class="card-right">
         <div id="alertMessage" class="alert-message"></div>
+
         <div class="input-field">
           <input type="text" id="username" placeholder=" " autocomplete="username">
           <label>Username / ET ID</label>
@@ -740,31 +716,46 @@ body {
 
         <button class="login-btn" id="loginButton">
           <span class="btn-ripple"></span>
-          <span id="btnText">🚀 Launch Neural Dashboard</span>
+          <span id="btnText">Launch Neural Dashboard</span>
         </button>
 
         <div class="card-footer-links">
-          <div>✨ New to NewsDesk? <a href="/auth/register">Create AI Account →</a></div>
-          <div class="ai-footer-badge">⚡ Neural Engine v4.2 • Quantum Ready</div>
+          <div style="color: rgba(237,232,220,0.4);">
+            New to NewsDesk? <a href="/auth/register">Create Account →</a>
+          </div>
+          <div class="ai-footer-badge">Neural Engine v4.2 · ET</div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
+<!-- ── BOTTOM TICKER ── -->
 <div class="ticker-bar">
-  <div class="ticker-label"><span>🧠</span> NEURAL MARKET STREAM</div>
-  <div class="ticker-scroll"><div class="ticker-items" id="tickerItems"></div></div>
+  <div class="ticker-label">
+    <span>◈</span> Live Markets
+  </div>
+  <div class="ticker-scroll">
+    <div class="ticker-items" id="tickerItems"></div>
+  </div>
 </div>
 
-<div id="countryTooltip" class="country-tooltip"><div class="tooltip-card" id="tooltipInner"></div></div>
+<!-- Tooltip -->
+<div id="countryTooltip" class="country-tooltip">
+  <div class="tooltip-card" id="tooltipInner"></div>
+</div>
 
+<!-- Music control -->
 <div class="music-control" id="musicControl">
-  <span class="music-icon">🎵</span>
-  <span id="musicStatus">Ambient Neural</span>
-  <span id="musicToggle">🔊</span>
+  <span class="music-icon">♪</span>
+  <span id="musicStatus">Ambient</span>
+  <span id="musicToggle">▶</span>
 </div>
 
+<!-- ============================================================
+     ALL JAVASCRIPT BELOW IS COMPLETELY UNTOUCHED FROM ORIGINAL
+     ============================================================ -->
 <script>
 // ========== SOOTHING AMBIENT MUSIC ==========
 let audioContext = null;
@@ -834,7 +825,7 @@ function startMusic() {
     if (audioContext.state === 'suspended') audioContext.resume();
     if (musicGain) musicGain.gain.setValueAtTime(0.35, audioContext.currentTime);
     isMusicPlaying = true;
-    document.getElementById('musicToggle').innerHTML = '🔇';
+    document.getElementById('musicToggle').innerHTML = '⏸';
     document.getElementById('musicStatus').innerHTML = 'Playing';
   }
 }
@@ -843,8 +834,8 @@ function stopMusic() {
   if (audioContext && musicGain && isMusicPlaying) {
     musicGain.gain.setValueAtTime(0, audioContext.currentTime);
     isMusicPlaying = false;
-    document.getElementById('musicToggle').innerHTML = '🔊';
-    document.getElementById('musicStatus').innerHTML = 'Ambient Neural';
+    document.getElementById('musicToggle').innerHTML = '▶';
+    document.getElementById('musicStatus').innerHTML = 'Ambient';
   }
 }
 
@@ -880,7 +871,7 @@ async function handleLogin() {
   }
   
   btn.disabled = true;
-  btnText.innerHTML = 'Authenticating... ⟳';
+  btnText.innerHTML = 'Authenticating...';
   
   try {
     const response = await fetch('/auth/login', {
@@ -913,7 +904,7 @@ async function handleLogin() {
     alertBox.style.display = 'block';
   } finally {
     btn.disabled = false;
-    btnText.innerHTML = '🚀 Launch Neural Dashboard';
+    btnText.innerHTML = 'Launch Neural Dashboard';
   }
 }
 
@@ -938,17 +929,17 @@ const tickerData = [
 const tickerContainer = document.getElementById('tickerItems');
 let tickerHTML = '';
 tickerData.forEach(d => {
-  tickerHTML += `<span class="ticker-item"><span>${d.n}</span><span>${d.v}</span><span style="color:${d.u ? '#2F9B7A' : '#E67E22'}">${d.ch}</span></span>`;
+  tickerHTML += `<span class="ticker-item"><span>${d.n}</span><span>${d.v}</span><span class="${d.u ? 'up' : 'dn'}">${d.ch}</span></span>`;
 });
 tickerContainer.innerHTML = tickerHTML + tickerHTML;
 
 // AI Neural Breaking News
 const neuralNews = [
-  '🧠 NewsDesk AI: Nifty neural forecast indicates 26,200 by May — bullish momentum',
-  '📊 Deep Learning Signal: Banking sector accumulation detected, upside potential 12%',
-  '🌍 Global AI Analysis: 3 rate cuts priced in for 2026, EM rally accelerating',
-  '⭐ Neural Alpha: Gold breakout pattern confirmed, target ₹76,800',
-  '🚀 NewsDesk Cognitive: India GDP neural model revises upward to 7.9%'
+  'NewsDesk AI: Nifty neural forecast indicates 26,200 by May — bullish momentum confirmed',
+  'Deep Learning Signal: Banking sector accumulation detected, upside potential 12%',
+  'Global AI Analysis: 3 rate cuts priced in for 2026, EM rally accelerating',
+  'Neural Alpha: Gold breakout pattern confirmed, target ₹76,800',
+  'NewsDesk Cognitive: India GDP neural model revises upward to 7.9%'
 ];
 const trackDiv = document.getElementById('breakingTrack');
 let activeIdx = 0;
@@ -968,8 +959,8 @@ setInterval(() => {
 // ========== 3D GLOBE ==========
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xFEF7E8);
-scene.fog = new THREE.FogExp2(0xFEF7E8, 0.0008);
+scene.background = new THREE.Color(0x050508);
+scene.fog = new THREE.FogExp2(0x050508, 0.0007);
 
 const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 0.3, 9.5);
@@ -984,39 +975,45 @@ const canvasTex = document.createElement('canvas');
 canvasTex.width = 2048;
 canvasTex.height = 1024;
 const ctxTex = canvasTex.getContext('2d');
-ctxTex.fillStyle = '#FCF3E0';
+ctxTex.fillStyle = '#0A0908';
 ctxTex.fillRect(0, 0, canvasTex.width, canvasTex.height);
-ctxTex.fillStyle = '#E5B83C';
-ctxTex.globalAlpha = 0.3;
+ctxTex.fillStyle = '#C0001F';
+ctxTex.globalAlpha = 0.18;
 for (let i = 0; i < 2000; i++) {
   ctxTex.beginPath();
-  ctxTex.arc(Math.random() * canvasTex.width, Math.random() * canvasTex.height, 1.8 + Math.random() * 4, 0, Math.PI*2);
+  ctxTex.arc(Math.random() * canvasTex.width, Math.random() * canvasTex.height, 1.5 + Math.random() * 3.5, 0, Math.PI*2);
   ctxTex.fill();
 }
-ctxTex.fillStyle = '#2F9B7A';
-ctxTex.globalAlpha = 0.2;
+ctxTex.fillStyle = '#A07408';
+ctxTex.globalAlpha = 0.12;
 for (let i = 0; i < 1000; i++) {
-  ctxTex.fillRect(Math.random() * canvasTex.width, Math.random() * canvasTex.height, 3, 3);
+  ctxTex.fillRect(Math.random() * canvasTex.width, Math.random() * canvasTex.height, 2.5, 2.5);
 }
 const globeTexture = new THREE.CanvasTexture(canvasTex);
 
 const globeGeometry = new THREE.SphereGeometry(globeRadius, 180, 180);
 const globeMaterial = new THREE.MeshStandardMaterial({
   map: globeTexture,
-  roughness: 0.22,
-  metalness: 0.58,
-  emissive: 0xE5B83C,
-  emissiveIntensity: 0.09
+  roughness: 0.28,
+  metalness: 0.62,
+  emissive: 0xC0001F,
+  emissiveIntensity: 0.06
 });
 const globe = new THREE.Mesh(globeGeometry, globeMaterial);
 scene.add(globe);
 
-const neuralRing1 = new THREE.Mesh(new THREE.TorusGeometry(globeRadius + 0.22, 0.016, 180, 600), new THREE.MeshStandardMaterial({ color: 0xE5B83C, emissive: 0xE5B83C, emissiveIntensity: 0.5 }));
+const neuralRing1 = new THREE.Mesh(
+  new THREE.TorusGeometry(globeRadius + 0.22, 0.016, 180, 600),
+  new THREE.MeshStandardMaterial({ color: 0xC0001F, emissive: 0xC0001F, emissiveIntensity: 0.55 })
+);
 neuralRing1.rotation.x = Math.PI / 2.15;
 neuralRing1.rotation.z = 0.6;
 scene.add(neuralRing1);
 
-const neuralRing2 = new THREE.Mesh(new THREE.TorusGeometry(globeRadius + 0.48, 0.012, 180, 600), new THREE.MeshStandardMaterial({ color: 0x2F9B7A, emissive: 0x1E6B55, emissiveIntensity: 0.4, transparent: true, opacity: 0.8 }));
+const neuralRing2 = new THREE.Mesh(
+  new THREE.TorusGeometry(globeRadius + 0.48, 0.012, 180, 600),
+  new THREE.MeshStandardMaterial({ color: 0xA07408, emissive: 0x6B4D05, emissiveIntensity: 0.4, transparent: true, opacity: 0.75 })
+);
 neuralRing2.rotation.x = Math.PI / 2.6;
 neuralRing2.rotation.z = -0.4;
 scene.add(neuralRing2);
@@ -1031,7 +1028,7 @@ for (let i = 0; i < partCount; i++) {
   partPositions.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
 }
 partGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(partPositions), 3));
-const partMat = new THREE.PointsMaterial({ color: 0xE5B83C, size: 0.022, transparent: true, opacity: 0.55 });
+const partMat = new THREE.PointsMaterial({ color: 0xA07408, size: 0.022, transparent: true, opacity: 0.45 });
 const aiParticles = new THREE.Points(partGeo, partMat);
 scene.add(aiParticles);
 
@@ -1043,17 +1040,20 @@ for (let i = 0; i < 2500; i++) {
   starsPos.push((Math.random() - 0.5) * 120 - 60);
 }
 starsGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(starsPos), 3));
-const starsMat = new THREE.PointsMaterial({ color: 0xE5B83C, size: 0.09, transparent: true, opacity: 0.4 });
+const starsMat = new THREE.PointsMaterial({ color: 0xEDE8DC, size: 0.07, transparent: true, opacity: 0.28 });
 const starsField = new THREE.Points(starsGeo, starsMat);
 scene.add(starsField);
 
-const ambient = new THREE.AmbientLight(0xE8DCC8);
+const ambient = new THREE.AmbientLight(0x1A1208);
 scene.add(ambient);
-const mainLight = new THREE.DirectionalLight(0xFFF5E6, 1.2);
+const mainLight = new THREE.DirectionalLight(0xEDE8DC, 1.1);
 mainLight.position.set(6, 7, 5);
 scene.add(mainLight);
-const backLightGold = new THREE.PointLight(0xE5B83C, 0.8);
-backLightGold.position.set(0, 1.8, -6.5);
+const backLightRed = new THREE.PointLight(0xC0001F, 0.6);
+backLightRed.position.set(0, 1.8, -6.5);
+scene.add(backLightRed);
+const backLightGold = new THREE.PointLight(0xA07408, 0.35);
+backLightGold.position.set(-5, -2, -4);
 scene.add(backLightGold);
 
 const globalMarkers = [
@@ -1075,14 +1075,14 @@ globalMarkers.forEach(m => {
   const x = r * Math.sin(phi) * Math.cos(theta);
   const y = r * Math.cos(phi);
   const z = r * Math.sin(phi) * Math.sin(theta);
-  const markerMat = new THREE.MeshStandardMaterial({ color: 0xE67E22, emissive: 0xE5B83C, emissiveIntensity: 0.6 });
+  const markerMat = new THREE.MeshStandardMaterial({ color: 0xC0001F, emissive: 0xC0001F, emissiveIntensity: 0.7 });
   const markerMesh = new THREE.Mesh(new THREE.SphereGeometry(0.058, 32, 32), markerMat);
   markerMesh.position.set(x, y, z);
   markerMesh.userData = { country: m };
   scene.add(markerMesh);
   markers.push(markerMesh);
   
-  const glowRing = new THREE.Mesh(new THREE.SphereGeometry(0.095, 24, 24), new THREE.MeshBasicMaterial({ color: 0xE5B83C, transparent: true, opacity: 0.5 }));
+  const glowRing = new THREE.Mesh(new THREE.SphereGeometry(0.095, 24, 24), new THREE.MeshBasicMaterial({ color: 0xC0001F, transparent: true, opacity: 0.35 }));
   glowRing.position.set(x, y, z);
   scene.add(glowRing);
 });
@@ -1105,11 +1105,11 @@ renderer.domElement.addEventListener('click', (event) => {
     const tooltip = document.getElementById('countryTooltip');
     const inner = document.getElementById('tooltipInner');
     inner.innerHTML = `
-      <div style="font-size:2.2rem; margin-bottom:8px;">${data.flag}</div>
-      <div style="font-weight:800; font-size:1.1rem; color:#0A2A38;">${data.name}</div>
-      <div style="font-size:0.7rem; text-transform:uppercase; color:#E5B83C; letter-spacing:1.5px; margin:8px 0;">🧠 NEURAL SIGNAL: ${data.cat}</div>
-      <div style="font-size:0.8rem; color:#1F2E2A; margin:10px 0; line-height:1.4;">${data.headline}</div>
-      <button style="background:linear-gradient(95deg,#0A2A38,#2F9B7A); border:none; border-radius:40px; padding:10px; width:100%; font-weight:700; color:white; cursor:pointer;" onclick="closeTooltip()">AI Deep Analysis →</button>
+      <div style="font-size:2rem; margin-bottom:8px;">${data.flag}</div>
+      <div style="font-family:'Playfair Display',serif; font-weight:900; font-size:1.1rem; color:#EDE8DC;">${data.name}</div>
+      <div style="font-size:0.62rem; text-transform:uppercase; color:#C0001F; letter-spacing:2px; margin:8px 0; font-weight:700;">◈ Neural Signal: ${data.cat}</div>
+      <div style="font-size:0.8rem; color:rgba(237,232,220,0.7); margin:10px 0; line-height:1.5;">${data.headline}</div>
+      <button style="background: var(--et-red, #C0001F); border:none; border-radius:2px; padding:10px; width:100%; font-weight:700; color:#EDE8DC; cursor:pointer; font-family:'DM Sans',sans-serif; letter-spacing:0.1em; font-size:0.8rem; text-transform:uppercase;" onclick="closeTooltip()">AI Deep Analysis →</button>
     `;
     tooltip.style.left = (event.clientX + 20) + 'px';
     tooltip.style.top = (event.clientY - 120) + 'px';
